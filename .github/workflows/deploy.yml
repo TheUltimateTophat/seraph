@@ -19,7 +19,7 @@ jobs:
           rm -rf .git .github node_modules tests .vscode .idea || true
 
       - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.IFTP_SERVER }}
           username: ${{ secrets.IFTP_USER }}

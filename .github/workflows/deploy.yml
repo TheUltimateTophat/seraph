@@ -1,37 +1,45 @@
 name: Deploy to InfinityFree
 
 on:
-  workflow_dispatch: # lets you run it manually
   push:
-    branches: [ main ] # deploys when you push to main
+    branches: [ main ]   # change if your default branch is different
+  workflow_dispatch:      # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "ftp-deploy"
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # gets the whole repo, not just last commit
 
-      - name: Clean junk (optional)
-        run: |
-          rm -rf .git .github node_modules tests .vscode .idea || true
+      # If you build anything (e.g., npm run build), do it here before deploy.
+      # - name: Build site
+      #   run: |
+      #     npm ci
+      #     npm run build
 
-      - name: FTP Deploy
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.IFTP_SERVER }}
-          username: ${{ secrets.IFTP_USER }}
-          password: ${{ secrets.IFTP_PASS }}
+          server: ${{ secrets.FTP_SERVER }}        # e.g. ftpupload.net
+          username: ${{ secrets.FTP_USERNAME }}    # e.g. epiz_12345678
+          password: ${{ secrets.FTP_PASSWORD }}    # your InfinityFree FTP password
           protocol: ftps
-          local-dir: .
-          server-dir: /htdocs/
-          timeout: 600000
-          dangerous-clean-slate: false
+          port: 21
+          local-dir: ./                            # what to upload (repo root)
+          server-dir: /htdocs/                     # InfinityFree web root
           exclude: |
-            **/.git**
+            **/.git*
             **/.github/**
             **/node_modules/**
-            **/*.map
-            **/*.log
+            **/README.md
+            **/.vscode/**
+            **/.DS_Store
